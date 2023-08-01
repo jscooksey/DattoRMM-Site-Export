@@ -78,6 +78,7 @@ class DattoRMMAPI:
         # Convert the remaining devicesStatus column from JSON string to additional DataFrame columns
         df_devicesStatus = pd.json_normalize(df_sites.devicesStatus)
         df_sites = pd.concat([df_sites, df_devicesStatus], axis=1, sort=False)
+        df_sites = df_sites.drop("devicesStatus", axis=1)
 
         # Drop the rows of the DattoRMM System Sites if only_customers is true
         if only_customers:
@@ -107,6 +108,27 @@ class DattoRMMAPI:
         data = response.json()
 
         return data["variables"]
+
+    def get_site_settings(self, site_uid: str):
+        """
+        Get all site settings for a particular site
+
+        Args:
+            site_uid (str): UID for the site requested
+
+        Returns:
+            _type_: Returns array of all site variables
+        """
+        headers = {"Authorization": f"Bearer {self.token}", "ContentType": "application/json"}
+
+        api_uri = f"{self.api_url}/api/v2/site/{site_uid}/settings"
+        response = requests.get(api_uri, headers=headers, timeout=5)
+
+        if response.status_code != 200:
+            print(f"Failed Request {response.status_code}")
+        data = response.json()
+
+        return data
 
     def update_site_variable(self, site_uid: str, var_id: int, value: str):
         """
